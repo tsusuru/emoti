@@ -8,67 +8,6 @@ let comment: string[] = ["You are enough", "you are amazing", "You are smart", "
 
 let distance = 0;
 
-// loops.forever(function () {
-
-
-
-
-
-loops.forever(function () {
-
-    pins.A2.digitalWrite(false)
-    control.waitMicros(2)
-    pins.A2.digitalWrite(true)
-    control.waitMicros(10)
-    pins.A2.digitalWrite(false)
-    distance = pins.A3.pulseIn(PulseValue.High) / 58
-    console.logValue("afstand in cm: ", distance)
-    if (distance < 60) {
-        approach()
-
-    } else {
-
-        crickit.motor1.run(runningSpeed = 50);
-
-        crickit.motor2.run(runningSpeed = 50);
-
-
-    }
-})
-
-
-function approach() {
-
-    music.stopAllSounds();
-        crickit.motor1.stop();
-
-        crickit.motor2.stop();
-
-        console.log(`${comment[Math.randomRange(0, comment.length - 1)]}`);
-
-        music.powerUp.play();
-
-        speaking();
-
-        pause(500);
-
-        music.stopAllSounds();
-
-        control.runInParallel(function () {
-
-            dance();
-
-        })
-
-        control.runInParallel(function () {
-
-            lightPerformance();
-
-        })
-    
-}
-
-
 
 function lightPerformance() {
 
@@ -110,6 +49,7 @@ function lightPerformance() {
 function dance() {
 
     console.log("Is Dancing")
+
 
     for (let i = 0; i < 6; i++) {
 
@@ -158,7 +98,7 @@ function speaking() {
     }
 }
 
-//Emergency Stop voor wanneer de robot te wild doet en zichzelf kapot maakt tijdens het testen
+//Emergency stop to stop the robot
 function emergencyStop() {
     crickit.motor1.stop();
     crickit.motor2.stop();
@@ -167,52 +107,61 @@ function emergencyStop() {
     console.log("Emergency stop succesful")
 }
 
-network.onInfraredReceivedNumber(function (num: 2223) {
-    emergencyStop();
-})
 
-network.onInfraredReceivedNumber(function (num) {
+//wheels are in reverse, so negative values makes it drive forward!
+loops.forever(function () {
+    // Ultrsonic sensor code
+    pins.A2.digitalWrite(false);
+    control.waitMicros(2);
+    pins.A2.digitalWrite(true);
+    control.waitMicros(10);
+    pins.A2.digitalWrite(false);
 
-    if (num === 2222) {
 
-        console.log("hallo");
-        crickit.motor1.run(runningSpeed = 50);
+    distance = pins.A3.pulseIn(PulseValue.High) / 58;
 
-        crickit.motor2.run(runningSpeed = 50);
 
-        pause(2000);
+    if (distance > 400 || distance < 2) {
+        console.log("Ongeldig echo-signaal, negeer meting...");
+    } else {
+        console.logValue("Afstand in cm: ", distance);
 
-        approach()
-        //vanaf die pause, als die distance werkt, vervangen met approach()
+        if (distance <= 20 && distance >= 8) {
+            crickit.motor1.stop();
+            crickit.motor2.stop();
+            control.runInParallel(function () {
+                dance();
+            });
+        } else if (distance < 60 && distance > 20) {
+            crickit.motor1.run(runningSpeed = -40);
+            crickit.motor2.run(runningSpeed = -40);
+            console.log(`${comment[Math.randomRange(0, comment.length - 1)]}`);
+            music.powerUp.play();
+            control.runInParallel(function () {
+                speaking();
+            });
+            pause(2000);
 
-        control.runInParallel(function () {
+            crickit.motor1.stop();
+            crickit.motor2.stop();
+            music.stopAllSounds();
+        }
 
-            dance();
+        if (distance < 8) {
+            crickit.motor1.run(runningSpeed = 50);
+            crickit.motor2.run(runningSpeed = 50);
+            pause(500);
 
-        })
 
-        control.runInParallel(function () {
-
-            lightPerformance();
-
-        })
-
+            crickit.motor1.stop();
+            crickit.motor2.stop();
+        }
     }
 
-})
+    //Pauses the reading of the sensor
+    basic.pause(100);
+});
 
-input.buttonA.onEvent(ButtonEvent.Click, function () {
-
-    network.infraredSendNumber(2222);
-
-
-})
-
-
-
-input.buttonsAB.onEvent(ButtonEvent.Click, function () {
-    network.infraredSendNumber(2223);
-})
 
 
 
