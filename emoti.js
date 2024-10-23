@@ -8,10 +8,11 @@ let comment: string[] = ["You are enough", "you are amazing", "You are smart", "
 
 let distance = 0;
 
+let colors = [Colors.Red, Colors.White, Colors.Green, Colors.Blue, Colors.Pink];
 
+// Shows the lights
 function lightPerformance() {
 
-    //kan in array gezet worden
 
     for (let i = 0; i < 2; i++) {
 
@@ -46,31 +47,39 @@ function lightPerformance() {
     }
 
 }
+
+
+
+
+// Function for dancing
 function dance() {
 
     console.log("Is Dancing")
 
 
-    for (let i = 0; i < 6; i++) {
+
+    for (let i = 0; i < 3; i++) {
 
         console.log("for");
 
-        crickit.motor1.run(runningSpeed = 50);
+        crickit.motor1.run(runningSpeed = 40);
+        crickit.motor2.run(runningSpeed = 40);
 
         pause(500);
 
-        crickit.motor1.stop();
-
-        crickit.motor2.run(runningSpeed = 50);
+        crickit.motor1.run(runningSpeed = -40);
+        crickit.motor2.run(runningSpeed = -40);
 
         pause(500);
 
+        crickit.motor1.stop()
         crickit.motor2.stop();
 
     }
 
 }
 
+// Function for speaking
 function speaking() {
 
     for (let i = 0; i < 4; i++) {
@@ -98,7 +107,7 @@ function speaking() {
     }
 }
 
-//Emergency stop to stop the robot
+//Emergency stop to stop the robot (test use)
 function emergencyStop() {
     crickit.motor1.stop();
     crickit.motor2.stop();
@@ -125,18 +134,20 @@ loops.forever(function () {
         console.log("Ongeldig echo-signaal, negeer meting...");
     } else {
         console.logValue("Afstand in cm: ", distance);
-
-        if (distance <= 20 && distance >= 8) {
+        // Dance if it comes to close
+        if (distance <= 60 && distance >= 10) {
             crickit.motor1.stop();
             crickit.motor2.stop();
             control.runInParallel(function () {
                 dance();
             });
-        } else if (distance < 60 && distance > 20) {
+        }
+        // Approach
+        else if (distance < 125 && distance >= 60) {
             crickit.motor1.run(runningSpeed = -40);
             crickit.motor2.run(runningSpeed = -40);
             console.log(`${comment[Math.randomRange(0, comment.length - 1)]}`);
-            music.powerUp.play();
+            music.powerUp.play()
             control.runInParallel(function () {
                 speaking();
             });
@@ -146,8 +157,8 @@ loops.forever(function () {
             crickit.motor2.stop();
             music.stopAllSounds();
         }
-
-        if (distance < 8) {
+        // Backs off when too close
+        if (distance < 10) {
             crickit.motor1.run(runningSpeed = 50);
             crickit.motor2.run(runningSpeed = 50);
             pause(500);
